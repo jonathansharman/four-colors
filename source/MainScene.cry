@@ -1,0 +1,197 @@
+import Graphics2D;
+import Graphics2DText;
+import Math;
+import Random;
+import TwoCansAlpha4;
+
+const X_RES = 800;
+const Y_RES = 600;
+
+const N_ROWS = 60;
+const N_COLS = 80;
+
+const TILE_WIDTH = X_RES / N_COLS;
+const TILE_HEIGHT = Y_RES / N_ROWS;
+
+const N_REGIONS = 40;
+
+const BORDER_WIDTH = 2;
+
+class Region {
+	field cells;
+	field adjacent = {};
+	field color = 0;
+
+	constructor(cells) {
+		this.cells = cells;
+	}
+}
+
+class MainScene : AbstractScene {
+	field regions = [];
+	field regionMap = [];
+
+	constructor() {
+		// Create region set.
+		for (row = 0; row < N_ROWS; ++row) {
+			for (col = 0; col < N_COLS; ++col) {
+				this.regions.add(new Region([[row, col]]));
+			}
+		}
+		// Set adjacency sets s.t. region1.adjacent.contains(region2) iff region1 and region2 are adjacent.
+		for (row = 0; row < N_ROWS; ++row) {
+			for (col = 0; col < N_COLS; ++col) {
+				region = this.regions[N_COLS * row + col];
+				if (row > 0) {
+					region.adjacent[this.regions[N_COLS * (row - 1) + col]] = true;
+				}
+				if (row < N_ROWS - 1) {
+					region.adjacent[this.regions[N_COLS * (row + 1) + col]] = true;
+				}
+				if (col > 0) {
+					region.adjacent[this.regions[N_COLS * row + col - 1]] = true;
+				}
+				if (col < N_COLS - 1) {
+					region.adjacent[this.regions[N_COLS * row + col + 1]] = true;
+				}
+			}
+		}
+		// Merge regions until the desired number of regions is reached.
+		while (this.regions.length > N_REGIONS) {
+			// Choose the smallest region to merge, in order to make the regions similarly sized.
+			region = this.regions[0];
+			for (r : this.regions) {
+				if (r.cells.length < region.cells.length) {
+					region = r;
+				}
+			}
+			// Pick a random region adjacent to the first.
+			adjRegion = region.adjacent.keys().choice();
+			// Add the cells from the second into the first.
+			region.cells.concat(adjRegion.cells);
+			// Update the adjaceny list.
+			for (adjAdjRegion : adjRegion.adjacent.keys()) {
+				// The first region is now ajacent to the second region's adjacency list.
+				if (adjAdjRegion != region) {
+					region.adjacent[adjAdjRegion] = true;
+					adjAdjRegion.adjacent[region] = true;
+				}
+				// The second region is no longer adjacent to anything since it's going to be removed.
+				adjAdjRegion.adjacent.remove(adjRegion);
+			}
+			// Find and erase the adjacent region.
+			for (i = 0; i < this.regions.length; ++i) {
+				if (this.regions[i] == adjRegion) {
+					this.regions.remove(i);
+					break;
+				}
+			}
+		}
+		// Initialize region map to nulls.
+		for (row = 0; row < N_ROWS; ++row) {
+			this.regionMap.add([]);
+			for (col = 0; col < N_COLS; ++col) {
+				this.regionMap[row].add(null);
+			}
+		}
+		// Assign region map.
+		for (region : this.regions) {
+			for (cell : region.cells) {
+				this.regionMap[cell[0]][cell[1]] = region;
+			}
+		}
+	}
+
+	function isComplete() {
+		for (region : this.regions) {
+			if (region.color == 0) {
+				return false;
+			}
+			for (adjRegion : region.adjacent.keys()) {
+				if (region.color == adjRegion.color) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	function update(inputManager, events) {
+		for (e : events) {
+			switch (e.type) {
+				case EventType.MOUSE_PRESS:
+					// Rotate through colors.
+					row = e.y / TILE_HEIGHT;
+					col = e.x / TILE_WIDTH;
+					this.regionMap[row][col].color = (this.regionMap[row][col].color + 1) % 5;
+					// Check for win condition.
+					if (this.isComplete()) {
+						this.switchScene(new MainScene());
+					}
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	function render() {
+		Graphics2D.Draw.fill(255, 255, 255);
+
+		// Draw region fills.
+		for (row = 0; row < N_ROWS; ++row) {
+			for (col = 0; col < N_COLS; ++col) {
+				switch (this.regionMap[row][col].color) {
+					case 1:
+						color = [255, 102, 102];
+						break;
+					case 2:
+						color = [179, 255, 102];
+						break;
+					case 3:
+						color = [102, 255, 255];
+						break;
+					case 4:
+						color = [179, 102, 255];
+						break;
+					default:
+						color = [255, 255, 255];
+						break;
+				}
+				Graphics2D.Draw.rectangle
+					( TILE_WIDTH * col, TILE_HEIGHT * row
+					, TILE_WIDTH, TILE_HEIGHT
+					, color[0], color[1], color[2]
+					);
+			}
+		}
+
+		// Draw region borders.
+		for (row = 0; row < N_ROWS; ++row) {
+			for (col = 0; col < N_COLS; ++col) {
+				// Top
+				if (row > 0 && this.regionMap[row][col] != this.regionMap[row - 1][col]) {
+					Graphics2D.Draw.line
+						( TILE_WIDTH * col - BORDER_WIDTH / 2
+						, TILE_HEIGHT * row
+						, TILE_WIDTH * (col + 1) + BORDER_WIDTH / 2
+						, TILE_HEIGHT * row
+						, BORDER_WIDTH
+						, 0, 0, 0
+						);
+				}
+				// Left
+				if (col > 0 && this.regionMap[row][col] != this.regionMap[row][col - 1]) {
+					Graphics2D.Draw.line
+						( TILE_WIDTH * col
+						, TILE_HEIGHT * row - BORDER_WIDTH / 2
+						, TILE_WIDTH * col
+						, TILE_HEIGHT * (row + 1) + BORDER_WIDTH / 2
+						, BORDER_WIDTH
+						, 0, 0, 0
+						);
+				}
+			}
+		}
+	}
+}
