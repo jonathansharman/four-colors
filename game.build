@@ -24,8 +24,8 @@
 	"vars": [
 		{ "name": "game_title", "value": "Four Colors" },
 		{ "name": "initial_scene", "value": "MainScene" },
-		{ "name": "screen_width", "value": 800 },
-		{ "name": "screen_height", "value": 600 },
+		{ "name": "screen_width", "value": 640 },
+		{ "name": "screen_height", "value": 480 },
 		{ "name": "use_60_fps", "value": false },
 		{ "name": "enable_wasd", "value": false }
 	],

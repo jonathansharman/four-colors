@@ -4,11 +4,11 @@ import Math;
 import Random;
 import TwoCansAlpha4;
 
-const X_RES = 800;
-const Y_RES = 600;
+const X_RES = 640;
+const Y_RES = 480;
 
-const N_ROWS = 60;
-const N_COLS = 80;
+const N_ROWS = 48;
+const N_COLS = 64;
 
 const TILE_WIDTH = X_RES / N_COLS;
 const TILE_HEIGHT = Y_RES / N_ROWS;
