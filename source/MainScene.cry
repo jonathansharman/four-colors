@@ -146,10 +146,10 @@ class MainScene : AbstractScene {
 						color = [255, 102, 102];
 						break;
 					case 2:
-						color = [179, 255, 102];
+						color = [139, 230, 75];
 						break;
 					case 3:
-						color = [102, 255, 255];
+						color = [102, 220, 255];
 						break;
 					case 4:
 						color = [179, 102, 255];
