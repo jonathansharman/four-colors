@@ -1,7 +1,7 @@
 ﻿{
 	"title": "Four Colors",
 	"id": "FourColors",
-	"description": "A platformer.",
+	"description": "Four-coloring game.",
 	"icons": ["assets/icon32.png", "assets/icon256.png"],
 
 	"deps": [
@@ -11,6 +11,7 @@
 	"source": "source",
 	"compilerlocale": "en",
 	"output": "output/%TARGET_NAME%",
+	"delegate-main-to": "TwoCansAlpha4",
 
 	"image-sheets": [
 		{
@@ -26,7 +27,7 @@
 		{ "name": "initial_scene", "value": "MainScene" },
 		{ "name": "screen_width", "value": 640 },
 		{ "name": "screen_height", "value": 480 },
-		{ "name": "use_60_fps", "value": false },
+		{ "name": "use_60_fps", "value": true },
 		{ "name": "enable_wasd", "value": false }
 	],
 
